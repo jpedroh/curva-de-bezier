@@ -1,4 +1,8 @@
 # curva-de-bezier
-Projeto feito por
-Vinícius Scala - [(vsob)](https://github.com/viniciusscala "GitHub")
+Projeto Grupo 3
 
+- Vinícius Scala (vsob)
+- Thayná Santos (tecs)
+- João Pedro Henrique (jphsd)
+- Lucas Nascimento Távora (lnt)
+- João Guilherme Pontes	(jgpp)
