@@ -74,25 +74,13 @@ aside {
 }
 
 .icons button:nth-child(1) {
-  background-image: url(./assets/add.png);
-}
-
-.icons button:nth-child(2) {
   background-image: url(./assets/remove.png);
   background-size: 4vw;
 }
 
-.icons button:nth-child(3) {
+.icons button:nth-child(2) {
   background-image: url(./assets/select.png);
   background-size: 7vw;
-}
-
-.icons button:nth-child(4) {
-  background-image: url(./assets/previous.png);
-}
-
-.icons button:nth-child(5) {
-  background-image: url(./assets/next.png);
 }
 
 .avaluation {

@@ -1,7 +1,9 @@
 var canvas = document.getElementById("canvas_bezier");
 
 canvas.width = document.getElementById("canvas_bezier_container").scrollWidth;
-canvas.height = document.getElementById("canvas_bezier_container").scrollHeight - 0.042 * window.innerHeight;
+canvas.height =
+  document.getElementById("canvas_bezier_container").scrollHeight -
+  0.042 * window.innerHeight;
 
 var context = canvas.getContext("2d");
 var rect = canvas.getBoundingClientRect();
@@ -10,12 +12,12 @@ var curvas = [pontos];
 var avaliacoesCurva = 200;
 var quant = 0;
 var pontosControle = 1;
+var mostrarPontosControleBezier = 0;
 var poligonaisControle = 1;
+var poligonaisControleBezier = 0;
 var exibirCurva = 1;
 var moverSelecionado = false;
 var noCirculo = false;
-
-
 
 //------------------ CONTROLES -------------------
 function novaCurva() {
@@ -27,16 +29,9 @@ function novaCurva() {
 }
 
 function deletarCurva() {
-  curvas.splice(quant, 1);
-  quant = curvas.length - 1;
-  if (quant == -1) {
-    quant = 0;
-    pontos = [];
-  }
-  else {
-    pontos = curvas[quant];
-  }
-  gerarCurva();
+  pontos = [];
+  curvas = [];
+  context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 function curvaAnterior() {
@@ -61,24 +56,42 @@ function mudarAvaliacao() {
 }
 
 function moverPonto() {
-  document.getElementById("moverPontoButton").classList.toggle('active');
+  document.getElementById("moverPontoButton").classList.toggle("active");
   moverSelecionado = true;
 }
 
 function alternarPontosControle(evt) {
-  document.getElementById('pontosControleButton').classList.toggle('active')
+  document.getElementById("pontosControleButton").classList.toggle("active");
   pontosControle = !pontosControle;
   gerarCurva();
 }
 
+function alternarPontosControleBezier(evt) {
+  document
+    .getElementById("pontosControleBezierButton")
+    .classList.toggle("active");
+  mostrarPontosControleBezier = !mostrarPontosControleBezier;
+  gerarCurva();
+}
+
 function alternarPoligonaisControle() {
-  document.getElementById('poligonaisControleButton').classList.toggle('active')
+  document
+    .getElementById("poligonaisControleButton")
+    .classList.toggle("active");
   poligonaisControle = !poligonaisControle;
   gerarCurva();
 }
 
+function alternarPoligonaisControleBezier() {
+  document
+    .getElementById("poligonaisControleBezierButton")
+    .classList.toggle("active");
+  poligonaisControleBezier = !poligonaisControleBezier;
+  gerarCurva();
+}
+
 function alternarExibicaoCurvas() {
-  document.getElementById('exibicaoCurvasButton').classList.toggle('active')
+  document.getElementById("exibicaoCurvasButton").classList.toggle("active");
   exibirCurva = !exibirCurva;
   gerarCurva();
 }
@@ -94,22 +107,30 @@ canvas.addEventListener("mousedown", function (event) {
   } else if (event.which == 1 && moverSelecionado) {
     let x = event.clientX - rect.left;
     let y = event.clientY - rect.top;
-    let indice = estaNoCirculo(({ x: x, y: y }));
+    let indice = estaNoCirculo({ x: x, y: y });
     if (noCirculo) {
-      canvas.addEventListener("mouseup", onMouseUp = (event) => {
-        canvas.removeEventListener('mouseup', onMouseUp);
-        canvas.removeEventListener('mousemove', onMouseMove);
-      });
-      canvas.addEventListener("mousemove", onMouseMove = (event) => {
-        curvas[quant][indice].x = event.clientX - canvas.getBoundingClientRect().left;
-        curvas[quant][indice].y = event.clientY - canvas.getBoundingClientRect().top;
-        gerarCurva();
-      });
+      canvas.addEventListener(
+        "mouseup",
+        (onMouseUp = (event) => {
+          canvas.removeEventListener("mouseup", onMouseUp);
+          canvas.removeEventListener("mousemove", onMouseMove);
+        })
+      );
+      canvas.addEventListener(
+        "mousemove",
+        (onMouseMove = (event) => {
+          curvas[quant][indice].x =
+            event.clientX - canvas.getBoundingClientRect().left;
+          curvas[quant][indice].y =
+            event.clientY - canvas.getBoundingClientRect().top;
+          gerarCurva();
+        })
+      );
     }
     moverSelecionado = false;
-    document.getElementById("moverPontoButton").classList.toggle('active');
+    document.getElementById("moverPontoButton").classList.toggle("active");
     noCirculo = false;
-    }
+  }
 });
 
 document.addEventListener("contextmenu", function (e) {
@@ -124,35 +145,89 @@ document.addEventListener("contextmenu", function (e) {
 //------------ Funções de desenho ----------------
 function gerarCurva() {
   context.clearRect(0, 0, canvas.width, canvas.height);
+  const pontosControleBezier = calcularPontosControleBezier(pontos);
 
-  for (k = 0; k < curvas.length; k++) {
-    if (k == quant) {
-      if (pontosControle) {
-        for (c = 0; c < curvas[k].length; c++) {
-          mostrarPonto(curvas[k][c].x, curvas[k][c].y, "rgba(28, 49, 89, 1)");
-        }
-      }
-      if (poligonaisControle) {
-        desenharReta(curvas[k], "rgba(28, 49, 89, 1)", 1);
-      }
-      if (exibirCurva) {
-        desenharCurva(curvas[k], "rgba(28, 49, 89, 1)", 3);
-      }
-    }
-    else {
-      if (pontosControle) {
-        for (c = 0; c < curvas[k].length; c++) {
-          mostrarPonto(curvas[k][c].x, curvas[k][c].y, "rgba(28, 49, 89, 0.25)"); 
-        }
-      }
-      if (poligonaisControle) {
-        desenharReta(curvas[k], "rgba(28, 49, 89, 0.25)", 1);
-      }
-      if (exibirCurva) {
-        desenharCurva(curvas[k], "rgba(28, 49, 89, 0.25)", 1);
-      }
+  if (pontosControle) {
+    pontos.forEach((ponto) => {
+      mostrarPonto(ponto.x, ponto.y, "rgba(28, 49, 89, 1)");
+    });
+  }
+
+  if (mostrarPontosControleBezier) {
+    pontosControleBezier.forEach((ponto) => {
+      mostrarPonto(ponto.x, ponto.y, "rgba(208, 2, 26 , 1)");
+    });
+  }
+
+  if (poligonaisControleBezier) {
+    desenharReta(pontosControleBezier, "rgba(245, 166, 35, 1)", 1);
+  }
+
+  if (poligonaisControle) {
+    desenharReta(curvas[0], "rgba(28, 49, 89, 1)", 1);
+  }
+  if (exibirCurva) {
+    const cores = ["rgba(28, 49, 89, 1)", "rgba(125, 212, 32, 1)"];
+
+    for (let i = 0; i < pontosControleBezier.length; i += 3) {
+      desenharCurva(
+        pontosControleBezier.slice(i, i + 4),
+        cores[i % cores.length],
+        3
+      );
     }
   }
+}
+
+function calcularPontosControleBezier(pontos) {
+  if (pontos.length <= 4) {
+    return pontos;
+  }
+
+  const L = pontos.length - 3;
+  const aux = [];
+
+  // b_0 = d_-1
+  aux[0] = pontos[0];
+  // b_1 = d_0
+  aux[1] = pontos[1];
+  // b_2
+  aux[2] = {
+    x: (1.0 / 2) * pontos[1].x + (1.0 / 2) * pontos[2].x,
+    y: (1.0 / 2) * pontos[1].y + (1.0 / 2) * pontos[2].y,
+  };
+
+  // b_3l - 1 = d_L
+  aux[3 * L - 2] = {
+    x: (1.0 / 2) * pontos[L + 1].x + (1.0 / 2) * pontos[L].x,
+    y: (1.0 / 2) * pontos[L + 1].y + (1.0 / 2) * pontos[L].y,
+  };
+
+  // b_3l - 1 = d_L
+  aux[3 * L - 1] = pontos[L + 1];
+
+  // b_3l = d_L + 1
+  aux[3 * L] = pontos[L + 2];
+
+  for (let i = 1; i < L - 1; i++) {
+    aux[3 * i + 1] = {
+      x: (2.0 / 3) * pontos[i + 1].x + (1.0 / 3) * pontos[i + 2].x,
+      y: (2.0 / 3) * pontos[i + 1].y + (1.0 / 3) * pontos[i + 2].y,
+    };
+    aux[3 * i + 2] = {
+      x: (1.0 / 3) * pontos[i + 1].x + (2.0 / 3) * pontos[i + 2].x,
+      y: (1.0 / 3) * pontos[i + 1].y + (2.0 / 3) * pontos[i + 2].y,
+    };
+  }
+
+  for (let i = 1; i < L; i++) {
+    aux[3 * i] = {
+      x: (1.0 / 2) * aux[3 * i - 1].x + (1.0 / 2) * aux[3 * i + 1].x,
+      y: (1.0 / 2) * aux[3 * i - 1].y + (1.0 / 2) * aux[3 * i + 1].y,
+    };
+  }
+
+  return aux;
 }
 
 function mostrarPonto(x, y, cor) {
@@ -179,7 +254,7 @@ function desenharReta(pontos, cor, linha) {
 }
 
 function desenharCurva(pontos, cor, linha) {
-  let curva = [];
+  const curva = [];
   for (n = 0; n <= avaliacoesCurva; n++) {
     let ponto = deCasteljau(pontos, n);
     curva.push({ x: ponto.x, y: ponto.y });
@@ -193,13 +268,16 @@ function deCasteljau(pontos, n) {
     let xX;
     let yY;
     for (i = 0; i < pontos.length - 1; i++) {
-      xX = pontos[i].x * (1 - (n / avaliacoesCurva)) + pontos[i + 1].x * (n / avaliacoesCurva);
-      yY = pontos[i].y * (1 - (n / avaliacoesCurva)) + pontos[i + 1].y * (n / avaliacoesCurva);
+      xX =
+        pontos[i].x * (1 - n / avaliacoesCurva) +
+        pontos[i + 1].x * (n / avaliacoesCurva);
+      yY =
+        pontos[i].y * (1 - n / avaliacoesCurva) +
+        pontos[i + 1].y * (n / avaliacoesCurva);
       aux.push({ x: xX, y: yY });
     }
     return deCasteljau(aux, n);
-  }
-  else {
+  } else {
     return pontos[0];
   }
 }
